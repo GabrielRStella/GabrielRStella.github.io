@@ -9,7 +9,7 @@ document.write('\
 				<ul>\
 					<li><a href="./index.html">Home</a></li>\
 					<!-- no projects to display yet :( -->\
-					<li><a href="./projects.html">Projects</a>\
+					<li><a href="#">Projects</a>\
 						<ul id="submenu">\
 							<li><a href="./index.html">[Sample Text]</a></li>\
 						</ul>\
