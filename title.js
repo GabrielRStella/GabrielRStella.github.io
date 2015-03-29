@@ -2,10 +2,29 @@ document.write('\
 	<link rel="stylesheet" type="text/css" href="styles.css">\
 	<title>XyPhoGR&#39;s Github Page</title>\
 \
+	<header class="titleheader">\
+		<div class="titletext">XyPhoGR&#39;s Github Page</div>\
+	</header>\
+	<!-- adds extra stuff so page content isn\'t written over-->\
+	<header class="titleheader" style="position:static;">\
+	</header>\
+\
+');
+function embedVid(vid) {
+	document.write('<div class="mediabox" style="width:420px;height:315px;">\
+			<iframe width="420" height="315" src="http://www.youtube.com/embed/' + vid + '" frameborder="0" allowfullscreen></iframe>\
+		</div><br/>');
+}
+function embedImg(img, w, h) {
+	document.write('<div class="mediabox" style="width:' + w + 'px;height:' + h + 'px;">\
+			<img src="' + img + '"/>\
+		</div><br/>');
+}
+/*
 	<h1>\
 		<div class="header">XyPhoGR&#39;s Github Page</div><div style="float:right;margin-left:15px;margin-right:15px;font: bold 16px/20px sans-serif;padding: 10px 0px;">-ralitski</div>\
 \
-<!-- the CSS for the following navbar was written by [unknown] and edited by Dhanushbadge on codepen.io (then edited more by Gabriel) -->\
+<!-- the CSS for the following navbar was written by [unknown] and edited by Dhanushbadge on codepen.io (then edited more by ral) -->\
 <!--\
 Copyright (c) 2015 by Dhanush Badge (http://codepen.io/dhanushbadge/pen/olsvi)\
 \
@@ -39,15 +58,4 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 			</nav>\
 		</div>\
 	</h1>\
-\
-');
-function embedVid(vid) {
-	document.write('<div class="mediabox" style="width:420px;height:315px;">\
-			<iframe width="420" height="315" src="http://www.youtube.com/embed/' + vid + '" frameborder="0" allowfullscreen></iframe>\
-		</div><br/>');
-}
-function embedImg(img, w, h) {
-	document.write('<div class="mediabox" style="width:' + w + 'px;height:' + h + 'px;">\
-			<img src="' + img + '"/>\
-		</div><br/>');
-}
+*/
