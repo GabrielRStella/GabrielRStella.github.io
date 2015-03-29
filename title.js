@@ -9,13 +9,14 @@ document.write('\
 				<ul>\
 					<li><a href="./index.html">Home</a></li>\
 					<!-- no projects to display yet :( -->\
-					<!--<li><a href="./projects.html">Projects</a>\
+					<li><a href="./projects.html">Projects</a>\
 						<ul id="submenu">\
-							<li><a href="./test.html">Test</a></li>\
+							<li><a href="./index.html">[Sample Text]</a></li>\
 						</ul>\
-					</li>-->\
+					</li>\
 					<li><a href="#">Other Sites</a>\
 						<ul id="submenu">\
+							<li><a href="https://github.com/XyPhoGR" target="_blank">Github</a></li>\
 							<li><a href="https://twitter.com/Ralitski" target="_blank">Twitter</a></li>\
 							<!-- oh jeez this breaks skype...how do -->\
 							<!--<li><a href="skype:ralitski?userinfo">Skype</a></li>-->\
