@@ -4,6 +4,28 @@ document.write('\
 \
 	<header class="titleheader">\
 		<div class="titletext">XyPhoGR&#39;s Github Page</div>\
+		<div class="navbar">\
+			<nav class="dropdownmenu">\
+				<ul>\
+					<li><a href="./index.html">Home</a></li>\
+					<!-- no projects to display yet :( -->\
+					<!--<li><a href="./projects.html">Projects</a>\
+						<ul id="submenu">\
+							<li><a href="./test.html">Test</a></li>\
+						</ul>\
+					</li>-->\
+					<li><a href="#">Other Sites</a>\
+						<ul id="submenu">\
+							<li><a href="https://twitter.com/Ralitski" target="_blank">Twitter</a></li>\
+							<!-- oh jeez this breaks skype...how do -->\
+							<!--<li><a href="skype:ralitski?userinfo">Skype</a></li>-->\
+							<li><a href="http://xyphogr.tumblr.com/" target="_blank">Tumblr</a></li>\
+						</ul>\
+					</li>\
+					<!--<li><a href="./about.html">About</a></li>-->\
+				</ul>\
+			</nav>\
+		</div>\
 	</header>\
 	<!-- adds extra stuff so page content isn\'t written over-->\
 	<header class="titleheader" style="position:static;">\
