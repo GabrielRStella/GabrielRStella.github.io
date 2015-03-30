@@ -23,7 +23,7 @@ document.write('\
 							<li><a href="http://xyphogr.tumblr.com/" target="_blank">Tumblr</a></li>\
 						</ul>\
 					</li>\
-					<!--<li><a href="./about.html">About</a></li>-->\
+					<li><a href="./sources.html">Sources</a></li>\
 				</ul>\
 			</nav>\
 		</div>\
