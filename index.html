@@ -18,11 +18,18 @@ class Greeting extends React.Component {
   }
 }
 
+class Entry extends React.Component {
+  render() {
+    return React.createElement('a', {'href': `/games/${this.props.link}.html`}, this.props.title);
+  }
+}
+
 class Page extends React.Component {
   render() {
     return React.createElement('div', {}, 
       React.createElement(Greeting, {name: 'Gabriel'}),
-      React.createElement('p', {}, 'This is an empty paragraph')
+      React.createElement('p', {}, 'This is an empty paragraph'),
+      React.createElement(Entry, {link: 'links', title: 'Games'})
     );
   }
 }
