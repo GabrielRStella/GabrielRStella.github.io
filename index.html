@@ -11,17 +11,24 @@
 <div id="react-app"></div>
 
 <script>
+
 class Greeting extends React.Component {
   render() {
     return React.createElement('h1', {}, "WIP! by " + this.props.name);
   }
 }
 
+class Page extends React.Component {
+  render() {
+    return React.createElement('div', {}, 
+      React.createElement(Greeting, {name: 'Gabriel'}),
+      React.createElement('p', {}, 'This is an empty paragraph')
+    );
+  }
+}
+
 var rootElement =
-  React.createElement('div', {}, 
-    React.createElement(Greeting, {name: 'Gabriel'}),
-    React.createElement('p', {}, 'This is an empty paragraph')
-  );
+  React.createElement(Page, {});
 
 ReactDOM.render(rootElement, document.getElementById('react-app'))
 </script>
