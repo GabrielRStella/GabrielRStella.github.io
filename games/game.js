@@ -316,10 +316,13 @@ function updateMoving() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function switchEventType(type) {
+  selected = null;
+
   canvas.onmousedown = null;
   canvas.onmouseup = null;
   canvas.onmousemove = null;
   canvas.onclick = null;
+
   if(type == 0) {
     canvas.onclick = mode1_onclick;
   }
