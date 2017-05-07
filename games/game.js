@@ -1,6 +1,12 @@
 var canvas = document.getElementById("gameCanvas");
-var width = canvas.width;
-var height = canvas.height;
+canvas.width = window.innerWidth - 10;
+canvas.height = window.innerHeight - 100;
+
+var brickSize = 40;
+//padding is annoying and not worth
+var canvasPadding = 0; //2 + Math.max(canvas.width % brickSize, canvas.height % brickSize) / 2;
+var width = canvas.width - canvasPadding * 2;
+var height = canvas.height - canvasPadding * 2;
 var ctx = canvas.getContext("2d");
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -9,7 +15,6 @@ var ctx = canvas.getContext("2d");
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var brickSize = 40;
 var brickInset = 5;
 
 var brickRows = Math.floor(height / brickSize);
@@ -133,9 +138,9 @@ function swap(x, y, nx, ny) {
     for(var dx = -1; dx <= 1; dx++) {
       for(var dy = -1; dy <= 1; dy++) {
         check(x + dx, y + dy);
-        check(newX + dx, newY + dy);
+        check(nx + dx, ny + dy);
         update(x + dx, y + dy);
-        update(newX + dx, newY + dy);
+        update(nx + dx, ny + dy);
       }
     }
   }
@@ -281,104 +286,149 @@ function updateMoving() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//single drag mode
-/*
-var dragging = false;
-var startX = -1;
-var startY = -1;
-var prevX = -1;
-var prevY = -1;
-var newX = -1;
-var newY = -1;
-
-canvas.onmousedown = function(e) {
-  startX = Math.floor(e.offsetX / brickSize);
-  startY = Math.floor(e.offsetY / brickSize);
-  newX = prevX = startX;
-  newY = prevY = startY;
-  if(bricks[newX][newY] && !bricks[newX][newY].set) {
-    dragging = true;
-    selected = {x: newX, y: newY};
+function switchEventType(type) {
+  canvas.onmousedown = null;
+  canvas.onmouseup = null;
+  canvas.onmousemove = null;
+  canvas.onclick = null;
+  if(type == 0) {
+    canvas.onclick = mode1_onclick;
+  }
+  if(type == 1) {
+    canvas.onmousedown = mode2_mouseDown;
+    canvas.onmouseup = mode2_mouseUp;
+    canvas.onmousemove = mode2_mouseMove;
+  }
+  if(type == 2) {
+    canvas.onmousedown = mode3_mouseDown;
+    canvas.onmouseup = mode3_mouseUp;
+    canvas.onmousemove = mode3_mouseMove;
   }
 }
 
-canvas.onmouseup = function(e) {
-  selected = null;
-  if(dragging) {
-    if(adjacent(startX, startY, newX, newY)) {
-      preSwap(startX, startY, newX, newY);
-      swap(startX, startY, newX, newY);
+//click and move mode
+
+function mode1_onclick(e) {
+  var x = Math.floor((e.offsetX - canvasPadding) / brickSize);
+  var y = Math.floor((e.offsetY - canvasPadding) / brickSize);
+
+  if(selected) {
+    var sx = selected.x;
+    var sy = selected.y;
+    if(adjacent(x, y, sx, sy)) {
+      if((!bricks[x][y] || !bricks[x][y].set)) {
+        swap(x, y, sx, sy);
+      }
+      selected = null;
+    } else {
+      selected = {x: x, y: y};
     }
+  } else if(bricks[x][y] && !bricks[x][y].set) {
+    selected = {x: x, y: y};
+  } else {
+    selected = null;
   }
-  dragging = false;
 }
 
-canvas.onmousemove = function(e) {
+//multi-drag mode
+
+var mode2_dragging = false;
+var mode2_prevX = -1;
+var mode2_prevY = -1;
+var mode2_newX = -1;
+var mode2_newY = -1;
+
+function mode2_mouseDown(e) {
+  mode2_prevX = Math.floor((e.offsetX - canvasPadding) / brickSize);
+  mode2_prevY = Math.floor((e.offsetY - canvasPadding) / brickSize);
+  mode2_newX = mode2_prevX;
+  mode2_newY = mode2_prevY;
+  if(bricks[mode2_newX][mode2_newY] && !bricks[mode2_newX][mode2_newY].set) {
+    mode2_dragging = true;
+    selected = {x: mode2_newX, y: mode2_newY};
+  }
+}
+
+function mode2_mouseUp(e) {
+  selected = null;
+  mode2_dragging = false;
+}
+
+function mode2_mouseMove(e) {
   if(e.buttons == 0) {
     canvas.onmouseup(e);
     return;
   }
 
-  var x = Math.floor(e.offsetX / brickSize);
-  var y = Math.floor(e.offsetY / brickSize);
+  mode2_newX = Math.floor((e.offsetX - canvasPadding) / brickSize);
+  mode2_newY = Math.floor((e.offsetY - canvasPadding) / brickSize);
+
+  var moved = mode2_newX != mode2_prevX || mode2_newY != mode2_prevY;
+  if(mode2_dragging && moved && (!bricks[mode2_newX][mode2_newY] || !bricks[mode2_newX][mode2_newY].set) && (!bricks[mode2_prevX][mode2_prevY] || !bricks[mode2_prevX][mode2_prevY].set) && adjacent(mode2_prevX, mode2_prevY, mode2_newX, mode2_newY)) {
+    swap(mode2_prevX, mode2_prevY, mode2_newX, mode2_newY);
+    selected = !bricks[mode2_newX][mode2_newY] || bricks[mode2_newX][mode2_newY].set ? null : {x: mode2_newX, y: mode2_newY};
+    mode2_prevX = mode2_newX;
+    mode2_prevY = mode2_newY;
+  }
+}
+
+//single drag mode
+
+var mode3_dragging = false;
+var mode3_startX = -1;
+var mode3_startY = -1;
+var mode3_prevX = -1;
+var mode3_prevY = -1;
+var mode3_newX = -1;
+var mode3_newY = -1;
+
+function mode3_mouseDown(e) {
+  mode3_startX = Math.floor((e.offsetX - canvasPadding) / brickSize);
+  mode3_startY = Math.floor((e.offsetY - canvasPadding) / brickSize);
+  mode3_newX = mode3_prevX = mode3_startX;
+  mode3_newY = mode3_prevY = mode3_startY;
+  if(bricks[mode3_newX][mode3_newY] && !bricks[mode3_newX][mode3_newY].set) {
+    mode3_dragging = true;
+    selected = {x: mode3_newX, y: mode3_newY};
+  }
+}
+
+function mode3_mouseUp(e) {
+  selected = null;
+  if(mode3_dragging) {
+    if(adjacent(mode3_startX, mode3_startY, mode3_newX, mode3_newY)) {
+      preSwap(mode3_startX, mode3_startY, mode3_newX, mode3_newY);
+      swap(mode3_startX, mode3_startY, mode3_newX, mode3_newY);
+    }
+  }
+  mode3_dragging = false;
+}
+
+function mode3_mouseMove(e) {
+  if(e.buttons == 0) {
+    canvas.onmouseup(e);
+    return;
+  }
+
+  var x = Math.floor((e.offsetX - canvasPadding) / brickSize);
+  var y = Math.floor((e.offsetY - canvasPadding) / brickSize);
 
   if(!bricks[x][y] || !bricks[x][y].set) {
-    newX = x;
-    newY = y;
-    var moved = newX != prevX || newY != prevY;
-    if(dragging) {
+    mode3_newX = x;
+    mode3_newY = y;
+    var moved = mode3_newX != mode3_prevX || mode3_newY != mode3_prevY;
+    if(mode3_dragging) {
       if(moved) {
-        if(adjacent(startX, startY, prevX, prevY)) preSwap(prevX, prevY, startX, startY);
-        if(adjacent(startX, startY, newX, newY)) preSwap(startX, startY, newX, newY);
+        if(adjacent(mode3_startX, mode3_startY, mode3_prevX, mode3_prevY)) preSwap(mode3_prevX, mode3_prevY, mode3_startX, mode3_startY);
+        if(adjacent(mode3_startX, mode3_startY, mode3_newX, mode3_newY)) preSwap(mode3_startX, mode3_startY, mode3_newX, mode3_newY);
         selected = null;
       }
-      selected = bricks[newX][newY] && !bricks[newX][newY].set ? {x: newX, y: newY} : null;
+      selected = bricks[mode3_newX][mode3_newY] && !bricks[mode3_newX][mode3_newY].set ? {x: mode3_newX, y: mode3_newY} : null;
     } else if(!moved) {
       selected = null;
     }
-    prevX = newX;
-    prevY = newY;
-  }
-}
-*/
-
-var dragging = false;
-var prevX = -1;
-var prevY = -1;
-var newX = -1;
-var newY = -1;
-
-canvas.onmousedown = function(e) {
-  prevX = Math.floor(e.offsetX / brickSize);
-  prevY = Math.floor(e.offsetY / brickSize);
-  newX = prevX;
-  newY = prevY;
-  if(bricks[newX][newY] && !bricks[newX][newY].set) {
-    dragging = true;
-    selected = {x: newX, y: newY};
-  }
-}
-
-canvas.onmouseup = function(e) {
-  selected = null;
-  dragging = false;
-}
-
-canvas.onmousemove = function(e) {
-  if(e.buttons == 0) {
-    canvas.onmouseup(e);
-    return;
-  }
-
-  newX = Math.floor(e.offsetX / brickSize);
-  newY = Math.floor(e.offsetY / brickSize);
-
-  var moved = newX != prevX || newY != prevY;
-  if(dragging && moved && (!bricks[newX][newY] || !bricks[newX][newY].set) && (!bricks[prevX][prevY] || !bricks[prevX][prevY].set) && adjacent(prevX, prevY, newX, newY)) {
-    swap(prevX, prevY, newX, newY);
-    selected = !bricks[newX][newY] || bricks[newX][newY].set ? null : {x: newX, y: newY};
-    prevX = newX;
-    prevY = newY;
+    mode3_prevX = mode3_newX;
+    mode3_prevY = mode3_newY;
   }
 }
 
@@ -519,6 +569,22 @@ function updateTick() {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//button cb
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+var currentMode = -1;
+var typeNames = ["Click", "Drag", "Select"];
+
+function clickCallback() {
+  currentMode = (currentMode + 1) % 3;
+  switchEventType(currentMode);
+  document.getElementById("game_mode_btn").value = "Click Me! (" + typeNames[currentMode] + ")";
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //start game
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -526,3 +592,5 @@ function updateTick() {
 setInterval(updateTick, 10);
 
 draw();
+
+window.onload = clickCallback;

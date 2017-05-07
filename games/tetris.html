@@ -3,14 +3,22 @@
 <head>
     <meta charset="utf-8" />
     <title>Tetris Matcher, based on Mozilla's Gamedev Canvas Workshop</title>
-    <style>* { padding: 0; margin: 0; } canvas { background: #eee; display: block; margin: 0 auto; }</style>
+    <style>* { padding: 0; margin: 0; } canvas { background: #fff; display: block; margin: 0 auto; }</style>
 </head>
 <body>
 
-<canvas id="gameCanvas" width="480" height="640"></canvas>
+<div style="height: 5px"></div>
+
+<canvas id="gameCanvas"></canvas>
 
 <script src="game.js">
 </script>
+<div style="align-content: center; text-align: center; margin: 0 auto">
+  <div style="display: inline-block">
+    <div style="height: 30px"></div>
+    <input id="game_mode_btn" type="button" value="Click Me!" onclick="clickCallback();" />
+  </div>
+</div>
 
 </body>
 </html>
