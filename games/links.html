@@ -14,14 +14,14 @@
 
 class Entry extends React.Component {
   render() {
-    return React.createElement('a', {'href', `/games/${this.props.link}.html`}, this.props.title);
+    return React.createElement('a', {'href': `/games/${this.props.link}.html`}, this.props.title);
   }
 }
 
 class Page extends React.Component {
   render() {
     return React.createElement('div', {}, 
-      React.createElement(h1, {}, 'Games'),
+      React.createElement('h1', {}, 'Games'),
       React.createElement(Entry, {link: 'tetris', title: 'Tetris Matcher'})
     );
   }
