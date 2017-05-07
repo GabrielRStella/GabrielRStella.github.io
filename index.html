@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>React Test</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.1/react.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.1/react-dom.min.js"></script>
+</head>
+<body>
+
+<div id="react-app"></div>
+
+<script>
+class Greeting extends React.Component {
+  render() {
+    return React.createElement('h1', {}, "WIP! by " + this.props.name);
+  }
+}
+
+var rootElement =
+  React.createElement('div', {}, 
+    React.createElement(Greeting, {name: 'Gabriel'}),
+    React.createElement('p', {}, 'This is an empty paragraph')
+  );
+
+ReactDOM.render(rootElement, document.getElementById('react-app'))
+</script>
+
+</body>
+</html>
