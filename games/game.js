@@ -2,12 +2,34 @@ var canvas = document.getElementById("gameCanvas");
 canvas.width = window.innerWidth - 10;
 canvas.height = window.innerHeight - 100;
 
-var brickSize = 40;
 //padding is annoying and not worth
-var canvasPadding = 0; //2 + Math.max(canvas.width % brickSize, canvas.height % brickSize) / 2;
-var width = canvas.width - canvasPadding * 2;
-var height = canvas.height - canvasPadding * 2;
+var width = canvas.width;
+var height = canvas.height;
 var ctx = canvas.getContext("2d");
+
+var brickSize = 40;
+
+//adjust brick size to be nice for the screen
+var minBricks = 5;
+var maxBricks = 15;
+
+var brickRows = Math.floor(height / brickSize);
+var brickColumns = Math.floor(width / brickSize);
+
+while(brickRows > maxBricks || brickColumns > maxBricks) {
+  brickSize++;
+  brickRows = Math.floor(height / brickSize);
+  brickColumns = Math.floor(width / brickSize);
+}
+
+while(brickRows < minBricks || brickColumns < minBricks) {
+  brickSize--;
+  brickRows = Math.floor(height / brickSize);
+  brickColumns = Math.floor(width / brickSize);
+}
+
+canvas.width = brickColumns * brickSize;
+canvas.height = brickRows * brickSize;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -16,9 +38,6 @@ var ctx = canvas.getContext("2d");
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var brickInset = 5;
-
-var brickRows = Math.floor(height / brickSize);
-var brickColumns = Math.floor(width / brickSize);
 
 var bricks = [];
 var moving = [];
@@ -218,7 +237,8 @@ function check(x, y) {
   var brick = bricks[x][y];
   if(brick && !brick.set) {
     var history = [];
-    var count = countBricks(x, y, brick.color, history);
+    var color = brick.color;
+    var count = countBricks(x, y, color, history);
 
     //prevent the player from making a move with more than four things
     //TODO: maybe give them specials if they match more than 5?
@@ -234,6 +254,15 @@ function check(x, y) {
       //remove line
       checkRows();
 
+    } else if(count > 6) {
+      for(var c = 0; c < brickColumns; c++) {
+        for(var r = 0; r < brickRows; r++) {
+          if(bricks[c][r] && !bricks[c][r].set && bricks[c][r].color == color) {
+            bricks[c][r] = null;
+            update(c, r);
+          }
+        }
+      }
     } else if(count > 4) {
       removeBricks(history);
     }
@@ -309,8 +338,10 @@ function switchEventType(type) {
 //click and move mode
 
 function mode1_onclick(e) {
-  var x = Math.floor((e.offsetX - canvasPadding) / brickSize);
-  var y = Math.floor((e.offsetY - canvasPadding) / brickSize);
+  var x = Math.floor((e.offsetX) / brickSize);
+  var y = Math.floor((e.offsetY) / brickSize);
+
+  if(!checkBounds(x, y)) return;
 
   if(selected) {
     var sx = selected.x;
@@ -321,7 +352,7 @@ function mode1_onclick(e) {
       }
       selected = null;
     } else {
-      selected = {x: x, y: y};
+      selected = (x == sx && y == sy) ? null : {x: x, y: y};
     }
   } else if(bricks[x][y] && !bricks[x][y].set) {
     selected = {x: x, y: y};
@@ -339,8 +370,11 @@ var mode2_newX = -1;
 var mode2_newY = -1;
 
 function mode2_mouseDown(e) {
-  mode2_prevX = Math.floor((e.offsetX - canvasPadding) / brickSize);
-  mode2_prevY = Math.floor((e.offsetY - canvasPadding) / brickSize);
+  mode2_prevX = Math.floor((e.offsetX) / brickSize);
+  mode2_prevY = Math.floor((e.offsetY) / brickSize);
+
+  if(!checkBounds(mode2_prevX, mode2_prevY)) return;
+
   mode2_newX = mode2_prevX;
   mode2_newY = mode2_prevY;
   if(bricks[mode2_newX][mode2_newY] && !bricks[mode2_newX][mode2_newY].set) {
@@ -360,8 +394,10 @@ function mode2_mouseMove(e) {
     return;
   }
 
-  mode2_newX = Math.floor((e.offsetX - canvasPadding) / brickSize);
-  mode2_newY = Math.floor((e.offsetY - canvasPadding) / brickSize);
+  mode2_newX = Math.floor((e.offsetX) / brickSize);
+  mode2_newY = Math.floor((e.offsetY) / brickSize);
+
+  if(!checkBounds(mode2_newX, mode2_newY)) return;
 
   var moved = mode2_newX != mode2_prevX || mode2_newY != mode2_prevY;
   if(mode2_dragging && moved && (!bricks[mode2_newX][mode2_newY] || !bricks[mode2_newX][mode2_newY].set) && (!bricks[mode2_prevX][mode2_prevY] || !bricks[mode2_prevX][mode2_prevY].set) && adjacent(mode2_prevX, mode2_prevY, mode2_newX, mode2_newY)) {
@@ -383,8 +419,11 @@ var mode3_newX = -1;
 var mode3_newY = -1;
 
 function mode3_mouseDown(e) {
-  mode3_startX = Math.floor((e.offsetX - canvasPadding) / brickSize);
-  mode3_startY = Math.floor((e.offsetY - canvasPadding) / brickSize);
+  mode3_startX = Math.floor((e.offsetX) / brickSize);
+  mode3_startY = Math.floor((e.offsetY) / brickSize);
+
+  if(!checkBounds(mode3_prevX, mode3_prevY)) return;
+
   mode3_newX = mode3_prevX = mode3_startX;
   mode3_newY = mode3_prevY = mode3_startY;
   if(bricks[mode3_newX][mode3_newY] && !bricks[mode3_newX][mode3_newY].set) {
@@ -410,8 +449,10 @@ function mode3_mouseMove(e) {
     return;
   }
 
-  var x = Math.floor((e.offsetX - canvasPadding) / brickSize);
-  var y = Math.floor((e.offsetY - canvasPadding) / brickSize);
+  var x = Math.floor((e.offsetX) / brickSize);
+  var y = Math.floor((e.offsetY) / brickSize);
+
+  if(!checkBounds(x, y)) return;
 
   if(!bricks[x][y] || !bricks[x][y].set) {
     mode3_newX = x;
