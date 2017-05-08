@@ -316,13 +316,10 @@ function updateMoving() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function switchEventType(type) {
-  selected = null;
-
   canvas.onmousedown = null;
   canvas.onmouseup = null;
   canvas.onmousemove = null;
   canvas.onclick = null;
-
   if(type == 0) {
     canvas.onclick = mode1_onclick;
   }
@@ -467,7 +464,7 @@ function mode3_mouseMove(e) {
         if(adjacent(mode3_startX, mode3_startY, mode3_newX, mode3_newY)) preSwap(mode3_startX, mode3_startY, mode3_newX, mode3_newY);
         selected = null;
       }
-      selected = bricks[mode3_newX][mode3_newY] && !bricks[mode3_newX][mode3_newY].set ? {x: mode3_newX, y: mode3_newY} : null;
+      selected = bricks[mode3_newX][mode3_newY] && !bricks[mode3_newX][mode3_newY].set && ((mode3_startX == x && mode3_startY == y) || adjacent(x, y, mode3_startX, mode3_startY)) ? {x: mode3_newX, y: mode3_newY} : {x: mode3_startX, y: mode3_startY};
     } else if(!moved) {
       selected = null;
     }
