@@ -3,10 +3,12 @@ var KEY_RIGHT = 39;
 var KEY_SPACE = 32;
 var KEY_P = 112;
 var KEY_R = 114;
+var KEY_C = 99;
 
 var KEY_PAUSE = KEY_P;
 var KEY_LAUNCH = KEY_SPACE;
 var KEY_RESET = KEY_R;
+var KEY_COOKIE = KEY_C;
 
 var MS_PER_TICK = 10;
 
@@ -478,6 +480,8 @@ document.addEventListener("keypress", function(e) {
     launchBalls();
   } else if(e.keyCode == KEY_RESET) {
     resetGame();
+  } else if(e.keyCode == KEY_COOKIE) {
+    clearCookies();
   }
 }, false);
 
@@ -516,6 +520,9 @@ function drawPaused() {
   y += rowHeight;
   ctx.fillText('R to restart', x, y);
   ctx.strokeText('R to restart', x, y);
+  y += rowHeight;
+  ctx.fillText('C to clear high score', x, y);
+  ctx.strokeText('C to clear high score', x, y);
 }
 
 function drawGameOver() {
