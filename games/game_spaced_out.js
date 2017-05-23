@@ -1,3 +1,9 @@
+/*
+TODO:
+-make enemies move
+-power ups
+*/
+
 var KEY_LEFT = 37;
 var KEY_RIGHT = 39;
 var KEY_SPACE = 32;
@@ -153,7 +159,7 @@ function resetGame() {
 */
 
   gameScore = 0;
-  maxScore = -1;
+  getMaxScore(); //sets value of maxScore
   gameWon = false;
 }
 
@@ -222,9 +228,8 @@ function getMaxScore() {
     index += 9; //beginning of the number
     maxScore = parseInt(cookie.substring(index));
     return maxScore;
-  }
-  maxScore = -1;
-  return -1;
+  } else maxScore = 0;
+  return maxScore;
 }
 
 function clearMaxScore() {
@@ -590,12 +595,13 @@ function drawHud() {
   var radius = ballRadiusDefault / 2;
   var xPadding = radius / 10;
   var maxx = width - xPadding - radius;
-  var y = radius + 30;
+  var y = radius + 60;
   var x = width - (radius * 2 + xPadding) * (maxBallCount - 1) - radius;
 
   ctx.textBaseline = 'top';
   ctx.textAlign = 'end';
-  ctx.fillText('Score: ' + gameScore, width - radius, 0);
+  ctx.fillText('High Score: ' + Math.max(maxScore, gameScore), width - radius, 0);
+  ctx.fillText('Score: ' + gameScore, width - radius, 30);
 
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'end';
