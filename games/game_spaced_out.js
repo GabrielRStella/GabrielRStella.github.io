@@ -75,6 +75,8 @@ var enemyPadding = 0;
   //---
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+var gameClearBonus = 0;
+var gameWon = false;
 var gameScore = 0;
 var maxScore = 0;
 
@@ -142,6 +144,7 @@ function resetGame() {
 
   ballRadiusMultiplier = 1;
 
+  gameClearBonus = 0;
   addEnemies();
 /*
   //bb, type, lives
@@ -152,12 +155,14 @@ function resetGame() {
 
   gameScore = 0;
   maxScore = -1;
+  gameWon = false;
 }
 
 function addEnemies() {
   var enemySize = Math.min(width, height) / 10;
-  var enemyColumns = Math.floor(width / (enemySize + enemyPadding)); //estimation
-  var enemyRows = Math.floor(height / 2 / (enemySize + enemyPadding)); //estimation
+  var div = (enemySize + enemyPadding) * 2;
+  var enemyColumns = Math.floor(width / div); //estimation
+  var enemyRows = Math.floor(height / div); //estimation
 
   var x = enemyPadding;
   var y = enemyPadding;
@@ -171,6 +176,7 @@ function addEnemies() {
     y = enemyPadding;
     x += enemySize + enemyPadding;
   }
+  gameClearBonus += enemyColumns * enemyRows;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -180,6 +186,21 @@ function addEnemies() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //misc
+
+//game
+
+function loseGame() {
+  GAME_OVER = true;
+  GAME_PAUSED = true;
+  setMaxScore(gameScore);
+  gameWon = false;
+}
+
+function winGame() {
+  gameScore += gameClearBonus + ballsLeft;
+  loseGame();
+  gameWon = true;
+}
 
 //score
 
@@ -345,9 +366,7 @@ function updateTick(part) {
           balls.push(newBall());
         } else {
           //end game
-          GAME_OVER = true;
-          GAME_PAUSED = true;
-          setMaxScore(gameScore);
+          loseGame();
         }
       }
     }
@@ -447,6 +466,9 @@ function updateTick(part) {
       //move and fire and whatever
     }
   }
+  if(enemies.length == 0) {
+    winGame();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -481,7 +503,7 @@ document.addEventListener("keypress", function(e) {
   } else if(e.keyCode == KEY_RESET) {
     resetGame();
   } else if(e.keyCode == KEY_COOKIE) {
-    clearCookies();
+    clearMaxScore();
   }
 }, false);
 
@@ -536,8 +558,9 @@ function drawGameOver() {
   var y = height / 3;
 
   ctx.lineWidth = 2;
-  ctx.fillText('GAME OVER', x, y);
-  ctx.strokeText('GAME OVER', x, y);
+  var text = gameWon ? "YOU WIN!" : "GAME OVER";
+  ctx.fillText(text, x, y);
+  ctx.strokeText(text, x, y);
   y += 75;
 
   ctx.font = '32px sans-serif';
@@ -548,7 +571,7 @@ function drawGameOver() {
   var highScore = maxScore;
   ctx.fillText('High Score: ' + highScore, x, y);
   ctx.strokeText('High Score: ' + highScore, x, y);
-  y = height * 2 / 3;
+  y += height / 5;
   ctx.fillText('R to restart', x, y);
   ctx.strokeText('R to restart', x, y);
 }
@@ -715,7 +738,7 @@ function draw() {
   drawBalls();
   drawEnemies();
 
-  drawHud();
+  if(!GAME_OVER) drawHud();
 
   if(GAME_PAUSED) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
