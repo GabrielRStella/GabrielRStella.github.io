@@ -77,6 +77,13 @@ var ballsLeft = 0;
 var enemies = [];
 
 var enemyPadding = 0;
+var enemyDx = 0;
+var enemyDy = 0;
+var enemySpeed = 1;
+var enemySpeedY = 1;
+
+var ENEMY_MIN_X = 0;
+var ENEMY_MAX_X = 0;
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   //---
@@ -131,7 +138,11 @@ function resetCanvas() {
     bb.dy *= hMod;
   }
 
-  enemyPadding = Math.min(width, height) / 40;
+  enemyPadding = Math.floor(Math.min(width, height) / 8);
+  enemySpeed = currentBallSpeed / 10;
+  enemySpeedY = enemySpeed * 10;
+  ENEMY_MIN_X = 0;
+  ENEMY_MAX_X = width;
 }
 
 function resetGame() {
@@ -145,10 +156,13 @@ function resetGame() {
   balls = [];
   balls.push(newBall());
   ballsLeft = BALLS_PER_GAME - 1;
-
-  enemies = [];
+  ballBounces = [];
 
   ballRadiusMultiplier = 1;
+
+  enemies = [];
+  enemyDx = 1;
+  enemyDy = 1;
 
   addEnemies();
 /*
@@ -164,22 +178,29 @@ function resetGame() {
 }
 
 function addEnemies() {
-  var enemySize = Math.floor(enemyPadding * 5 / 2);
+  var enemySize = Math.floor(Math.min(width, height) / 10);
   var div = (enemySize + enemyPadding) * 2;
   var enemyColumns = Math.floor(width / div); //estimation
   var enemyRows = Math.floor(height / div); //estimation
 
-  var x = enemyPadding;
-  var y = enemyPadding;
-  for(var c = 0; c < enemyColumns; c++) {
-    for(var r = 0; r < enemyRows; r++) {
+  var x = 0;
+  var y = 0;
+  for(var r = 0; r < enemyRows; r++) {
+    var left = null;
+    for(var c = 0; c < enemyColumns; c++) {
       var str = Math.floor(Math.random() * 3) + 1;
-      enemies.push(getEnemy(boundingBox(x, y, enemySize, enemySize), str, str));
 
-      y += enemySize + enemyPadding;
+      var enemy = getEnemy(boundingBox(x, y, enemySize, enemySize), str, str);
+      enemy.left = left;
+      if(left != null) left.right = enemy;
+      left = enemy;
+
+      enemies.push(enemy);
+
+      x += enemySize + enemyPadding;
     }
-    y = enemyPadding;
-    x += enemySize + enemyPadding;
+    y += enemySize + enemyPadding;
+    x = 0;
   }
 }
 
@@ -460,15 +481,45 @@ function updateTick(part) {
   //update enemies
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+  var enemyMove = enemyDx * enemySpeed;
+  var moved = false;
   for(var i = 0; i < enemies.length; i++) {
     var enemy = enemies[i];
     if(enemy.dead) {
       enemies.splice(i, 1);
       i--;
+      //update links
+      if(enemy.left != null) enemy.left.right = enemy.right;
+      if(enemy.right != null) enemy.right.left = enemy.left;
     } else {
+      if(enemyMove > 0) {
+        var right = enemy.right;
+        if((right == null && enemy.bb.x < ENEMY_MAX_X - enemy.bb.dx) || (right && (enemy.bb.x + enemy.bb.dx + enemyPadding < right.bb.x))) {
+          enemy.bb.x += enemyMove;
+          moved = true;
+        }
+      } else if(enemyMove < 0) {
+        var left = enemy.left;
+        if((left == null && enemy.bb.x > ENEMY_MIN_X) || (left && ((left.bb.x + left.bb.dx) < enemy.bb.x - enemyPadding))) {
+          enemy.bb.x += enemyMove;
+          moved = true;
+        }
+      }
       //move and fire and whatever
     }
   }
+  if(!moved) {
+    enemyDx *= -1;
+    var enemyMoveY = enemyDy * enemySpeedY;
+    for(var i = 0; i < enemies.length; i++) {
+      enemies[i].bb.y += enemyMoveY;
+      if(paddleY - enemies[i].bb.y - enemies[i].bb.dy < ballRadius * 3) loseGame();
+    }
+    var mult = 1.5;
+    enemyDx *= mult;
+    enemyDy *= mult;
+  }
+
   if(enemies.length == 0) {
     winGame();
   }
