@@ -131,7 +131,7 @@ function resetCanvas() {
     bb.dy *= hMod;
   }
 
-  enemyPadding = Math.min(width, height) / 20;
+  enemyPadding = Math.min(width, height) / 40;
 }
 
 function resetGame() {
@@ -164,7 +164,7 @@ function resetGame() {
 }
 
 function addEnemies() {
-  var enemySize = Math.min(width, height) / 10;
+  var enemySize = Math.floor(enemyPadding * 5 / 2);
   var div = (enemySize + enemyPadding) * 2;
   var enemyColumns = Math.floor(width / div); //estimation
   var enemyRows = Math.floor(height / div); //estimation
