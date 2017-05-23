@@ -188,7 +188,7 @@ function addEnemies() {
   for(var r = 0; r < enemyRows; r++) {
     var left = null;
     for(var c = 0; c < enemyColumns; c++) {
-      var str = Math.floor(Math.random() * 3) + 1;
+      var str = Math.floor(Math.random() * Math.random() * 3) + 1;
 
       var enemy = getEnemy(boundingBox(x, y, enemySize, enemySize), str, str);
       enemy.left = left;
@@ -223,6 +223,7 @@ function loseGame() {
 
 function winGame() {
   gameScore = Math.ceil(gameScore * GAME_CLEAR_BONUS);
+  gameScore += (ballsLeft + 1) * (ballsLeft + 1);
   loseGame();
   gameWon = true;
 }
@@ -515,7 +516,7 @@ function updateTick(part) {
       enemies[i].bb.y += enemyMoveY;
       if(paddleY - enemies[i].bb.y - enemies[i].bb.dy < ballRadius * 3) loseGame();
     }
-    var mult = 1.5;
+    var mult = 1.2;
     enemyDx *= mult;
     enemyDy *= mult;
   }
