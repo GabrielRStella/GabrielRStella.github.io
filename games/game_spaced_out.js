@@ -53,6 +53,7 @@ var paddleRight = false;
   //balls
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+var currentBallSpeed = 1;
 var ballRadiusDefault = 0;
 var ballRadiusMultiplier = 1;
 
@@ -66,11 +67,14 @@ var ballsLeft = 0;
 
 var enemies = [];
 
+var enemyPadding = 0;
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   //---
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var gameScore = 0;
+var maxScore = 0;
 
 function resetCanvas() {
   var oldWidth = width;
@@ -94,6 +98,7 @@ function resetCanvas() {
 
   paddleX *= wMod;
 
+  currentBallSpeed = width * height / 100000;
   ballRadiusDefault = paddleHeight * 2 / 3;
 
   GAME_PAUSED = true;
@@ -115,6 +120,8 @@ function resetCanvas() {
     bb.dx *= wMod;
     bb.dy *= hMod;
   }
+
+  enemyPadding = Math.min(width, height) / 20;
 }
 
 function resetGame() {
@@ -133,12 +140,35 @@ function resetGame() {
 
   ballRadiusMultiplier = 1;
 
+  addEnemies();
+/*
   //bb, type, lives
   enemies.push(getEnemy(boundingBox(10, 10, 20, 20), 1, 1));
   enemies.push(getEnemy(boundingBox(50, 30, 10, 30), 2, 2));
   enemies.push(getEnemy(boundingBox(100, 20, 300, 100), 3, Math.floor(Math.random() * 3) + 1));
+*/
 
   gameScore = 0;
+  maxScore = -1;
+}
+
+function addEnemies() {
+  var enemySize = Math.min(width, height) / 10;
+  var enemyColumns = Math.floor(width / (enemySize + enemyPadding)); //estimation
+  var enemyRows = Math.floor(height / 2 / (enemySize + enemyPadding)); //estimation
+
+  var x = enemyPadding;
+  var y = enemyPadding;
+  for(var c = 0; c < enemyColumns; c++) {
+    for(var r = 0; r < enemyRows; r++) {
+      var str = Math.floor(Math.random() * 3) + 1;
+      enemies.push(getEnemy(boundingBox(x, y, enemySize, enemySize), str, str));
+
+      y += enemySize + enemyPadding;
+    }
+    y = enemyPadding;
+    x += enemySize + enemyPadding;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,6 +178,40 @@ function resetGame() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //misc
+
+//score
+
+//adds a new score, stores if it is max, and returns the actual max
+function setMaxScore(score) {
+  var max = getMaxScore();
+  if(score > max) {
+    var date = new Date();
+    date.setFullYear(date.getFullYear() + 1); //won't expire for a while :)
+    document.cookie = "maxScore=" + score + ";expires=" + date;
+    max = score;
+  }
+  maxScore = max;
+  return max;
+}
+
+function getMaxScore() {
+  var cookie = document.cookie;
+  var index = cookie.search("maxScore=");
+  if(index >= 0) {
+    index += 9; //beginning of the number
+    maxScore = parseInt(cookie.substring(index));
+    return maxScore;
+  }
+  maxScore = -1;
+  return -1;
+}
+
+function clearMaxScore() {
+    var date = new Date();
+    date.setFullYear(date.getFullYear() - 1); //already expired! woo
+    document.cookie = "maxScore=;expires=" + date.toUTCString();
+    maxScore = -1;
+}
 
 //bounding box stuff
 
@@ -176,7 +240,7 @@ function getBallRadius() {
 }
 
 function getBallSpeed() {
-  return width * height / 100000;
+  return currentBallSpeed;
 }
 
 function randomSpeed(ball, mag) {
@@ -221,7 +285,7 @@ function onBallDead(ball) {
 //enemy stuff
 
 function getEnemyImg(type) {
-  return 'box';// "enemy_" + type;
+  return "enemy_" + type;
 }
 
 function getEnemy(bb, type, lives, hitPoints, deathPoints) {
@@ -281,6 +345,7 @@ function updateTick(part) {
           //end game
           GAME_OVER = true;
           GAME_PAUSED = true;
+          setMaxScore(gameScore);
         }
       }
     }
@@ -472,6 +537,10 @@ function drawGameOver() {
   ctx.lineWidth = 1;
   ctx.fillText('Score: ' + gameScore, x, y);
   ctx.strokeText('Score: ' + gameScore, x, y);
+  y += 35;
+  var highScore = maxScore;
+  ctx.fillText('High Score: ' + highScore, x, y);
+  ctx.strokeText('High Score: ' + highScore, x, y);
   y = height * 2 / 3;
   ctx.fillText('R to restart', x, y);
   ctx.strokeText('R to restart', x, y);
