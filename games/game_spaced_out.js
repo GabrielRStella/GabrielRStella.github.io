@@ -1,6 +1,5 @@
 /*
 TODO:
--make enemies move
 -power ups
 */
 
@@ -138,7 +137,7 @@ function resetCanvas() {
     bb.dy *= hMod;
   }
 
-  enemyPadding = Math.floor(Math.min(width, height) / 8);
+  enemyPadding = Math.floor(Math.min(width, height) / 15);
   enemySpeed = currentBallSpeed / 10;
   enemySpeedY = enemySpeed * 10;
   ENEMY_MIN_X = 0;
@@ -178,10 +177,10 @@ function resetGame() {
 }
 
 function addEnemies() {
-  var enemySize = Math.floor(Math.min(width, height) / 10);
+  var enemySize = enemyPadding;
   var div = (enemySize + enemyPadding) * 2;
-  var enemyColumns = Math.floor(width / div); //estimation
-  var enemyRows = Math.floor(height / div); //estimation
+  var enemyColumns = Math.ceil(width / div); //estimation
+  var enemyRows = Math.ceil(height / div); //estimation
 
   var x = 0;
   var y = 0;
