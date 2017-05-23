@@ -16,6 +16,7 @@ var prevTickMs = new Date().getTime();
 
 var GAME_PAUSED = true;
 var GAME_OVER = false;
+var GAME_CLEAR_BONUS = 1.2;
 
 var BALL_DX_MIN = 0.00;
 var BALL_DX_MAX = 0.99;
@@ -75,7 +76,6 @@ var enemyPadding = 0;
   //---
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var gameClearBonus = 0;
 var gameWon = false;
 var gameScore = 0;
 var maxScore = 0;
@@ -144,7 +144,6 @@ function resetGame() {
 
   ballRadiusMultiplier = 1;
 
-  gameClearBonus = 0;
   addEnemies();
 /*
   //bb, type, lives
@@ -176,7 +175,6 @@ function addEnemies() {
     y = enemyPadding;
     x += enemySize + enemyPadding;
   }
-  gameClearBonus += enemyColumns * enemyRows;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -197,7 +195,7 @@ function loseGame() {
 }
 
 function winGame() {
-  gameScore += gameClearBonus + ballsLeft;
+  gameScore = Math.ceil(gameScore * GAME_CLEAR_BONUS);
   loseGame();
   gameWon = true;
 }
