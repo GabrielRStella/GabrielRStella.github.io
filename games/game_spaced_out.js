@@ -23,7 +23,7 @@ var GAME_PAUSED = true;
 var GAME_OVER = false;
 var GAME_CLEAR_BONUS = 1.2;
 
-var BALL_DX_MIN = 0.10;
+var BALL_DX_MIN = 0.00;
 var BALL_DX_MAX = 0.99;
 var BALL_BOUNCE_MAX_AGE = 25;
 var BALLS_PER_GAME = 3;
@@ -114,7 +114,7 @@ function resetCanvas() {
 
   paddleX *= wMod;
 
-  currentBallSpeed = width * height / 100000;
+  currentBallSpeed = paddleSpeed; //width * height / 100000;
   ballRadiusDefault = paddleHeight * 2 / 3;
 
   GAME_PAUSED = true;
@@ -301,6 +301,8 @@ function newBall(x, y, dx, dy) {
   var by = y ? y : paddleY - paddleHeight / 2 - getBallRadius();
   var launched = x || y;
   return {x: bx, y: by, dx: dx, dy: dy, launched: launched, dead: false};
+
+  //this was going to prevent double-hits (but now the physics seem to work anyway)
   //return {x: bx, y: by, dx: dx, dy: dy, launched: launched, dead: false, contact: false};
 }
 
@@ -454,10 +456,21 @@ function updateTick(part) {
         ball.dx = ndx;
         ball.dy = Math.sqrt(1 - ball.dx * ball.dx) * Math.sign(ball.dy);
         ballBounces.push({x: ball.x, y: ball.y + ballRadius, age: 0});
-      } else {
-        //check corners of paddle
+      } else if(ball.y <= paddleY + paddleHeight / 2) {
+        //check corners and sides of paddle
         if(boundingBox(paddleX - paddleWidth / 2, paddleY - paddleHeight / 2, paddleWidth, paddleHeight).distance(ball.x, ball.y) <= ballRadius) {
-          bounceBall(ball, ball.x - paddleX, ball.y - paddleY);
+          var dx = ball.x - (paddleX + paddleWidth / 2);
+          var dy = ball.y - (paddleY + paddleHeight / 2);
+          var xSize = paddleWidth / 2;
+          var ySize = paddleHeight / 2;
+
+          if(Math.abs(dx) <= xSize) {
+            dx = 0;
+          }
+          if(Math.abs(dy) <= ySize) {
+            dy = 0;
+          }
+          bounceBall(ball, dx, dy);
         }
         //check side
       }
@@ -468,24 +481,6 @@ function updateTick(part) {
         if(!enemy.dead && enemy.bb.distance(ball.x, ball.y) <= ballRadius) {
           //collision
           enemy.onHit(ball);
-
-/*
-          var bdx = Math.abs(ball.dx);
-          var bdy = Math.abs(ball.dy);
-
-          var ballxMin = ball.x - ballRadius;
-          var ballxMax = ball.x + ballRadius;
-          var exMin = enemy.bb.x + bdx;
-          var exMax = enemy.bb.x + enemy.bb.dx - bdx;
-
-          var ballyMin = ball.y - ballRadius;
-          var ballyMax = ball.y + ballRadius;
-          var eyMin = enemy.bb.y + bdy;
-          var eyMax = enemy.bb.y + enemy.bb.dy - bdy;
-
-          var dx = ballxMax <= exMin ? -1 : (ballxMin >= exMax ? 1 : 0);
-          var dy = ballyMax <= eyMin ? -1 : (ballyMin >= eyMax ? 1 : 0);
-*/
 
           var dx = ball.x - (enemy.bb.x + enemy.bb.dx / 2);
           var dy = ball.y - (enemy.bb.y + enemy.bb.dy / 2);
@@ -501,6 +496,8 @@ function updateTick(part) {
           }
             //else dy = Math.sign(dy);
 
+          //dx = ball.x - paddleX;
+          //dy = ball.y - paddleY;
           bounceBall(ball, dx, dy);
         }
       }
@@ -551,7 +548,6 @@ function updateTick(part) {
       enemies[i].bb.y += enemyMoveY;
       if(paddleY - enemies[i].bb.y - enemies[i].bb.dy < ballRadius * 3) loseGame();
     }
-    var mult = 1.2;
     enemyDx *= mult;
     enemyDy *= mult;
   }
