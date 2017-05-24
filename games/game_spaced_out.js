@@ -1,6 +1,8 @@
 /*
 TODO:
 -power ups
+-power downs
+-improve calculations used for speed and sizes and such
 */
 
 var KEY_LEFT = 37;
@@ -548,6 +550,7 @@ function updateTick(part) {
       enemies[i].bb.y += enemyMoveY;
       if(paddleY - enemies[i].bb.y - enemies[i].bb.dy < ballRadius * 3) loseGame();
     }
+    var mult = 1.15;
     enemyDx *= mult;
     enemyDy *= mult;
   }
@@ -842,6 +845,13 @@ function draw() {
     if(GAME_OVER) drawGameOver();
     else drawPaused();
   }
+
+  //signature
+  ctx.font = '24px sans-serif';
+  ctx.fillStyle = "#000000";
+  ctx.textBaseline = 'middle'; //'alphabetic';
+  ctx.textAlign = 'end';
+  ctx.fillText('By Gabriel R S', width - 10, paddleY);
 
   prevTickMs = ms;
 
