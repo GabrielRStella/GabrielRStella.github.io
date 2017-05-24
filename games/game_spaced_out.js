@@ -23,7 +23,7 @@ var GAME_PAUSED = true;
 var GAME_OVER = false;
 var GAME_CLEAR_BONUS = 1.2;
 
-var BALL_DX_MIN = 0.00;
+var BALL_DX_MIN = 0.10;
 var BALL_DX_MAX = 0.99;
 var BALL_BOUNCE_MAX_AGE = 25;
 var BALLS_PER_GAME = 3;
@@ -301,6 +301,7 @@ function newBall(x, y, dx, dy) {
   var by = y ? y : paddleY - paddleHeight / 2 - getBallRadius();
   var launched = x || y;
   return {x: bx, y: by, dx: dx, dy: dy, launched: launched, dead: false};
+  //return {x: bx, y: by, dx: dx, dy: dy, launched: launched, dead: false, contact: false};
 }
 
 function launchBalls() {
@@ -310,7 +311,7 @@ function launchBalls() {
   for(var i = 0; i < balls.length; i++) {
     var ball = balls[i];
     if(!ball.launched) {
-      ball.dx = dx;	
+      ball.dx = dx;
       ball.dy = dy;
       randomSpeed(ball);
       ball.launched = true;
@@ -319,8 +320,12 @@ function launchBalls() {
 }
 
 function bounceBall(ball, nx, ny) {
-  ball.dx = Math.abs(ball.dx) * (nx < 0 ? -1 : 1);
-  ball.dy = Math.abs(ball.dy) * (ny < 0 ? -1 : 1);
+  var ballAngle = Math.atan2(-ball.dy, -ball.dx);
+  var normAngle = Math.atan2(ny, nx);
+console.log(nx + " " + ny + " = " + (normAngle));
+  ballAngle += (normAngle - ballAngle) * 2;
+  ball.dx = Math.cos(ballAngle);
+  ball.dy = Math.sin(ballAngle);
   ballBounces.push({x: ball.x, y: ball.y, age: 0});
 }
 
@@ -362,6 +367,15 @@ function updateTick(part) {
   //resize
 
   //other stuff
+
+  for(var i = 0; i < ballBounces.length; i++) {
+    var bounce = ballBounces[i];
+    bounce.age += part;
+    if(bounce.age >= BALL_BOUNCE_MAX_AGE) {
+      ballBounces.splice(i, 1);
+      i--;
+    }
+  }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   //move the paddle
@@ -423,7 +437,7 @@ function updateTick(part) {
           ndx = ball.dx - ndx;
         };
 
-        var paddleMoveMod = part * 0.1;
+        var paddleMoveMod = 0.1;
         if(paddleLeft) {
           ndx -= paddleMoveMod;
         }
@@ -454,8 +468,39 @@ function updateTick(part) {
         if(!enemy.dead && enemy.bb.distance(ball.x, ball.y) <= ballRadius) {
           //collision
           enemy.onHit(ball);
-          var dx = ball.x - enemy.bb.x - enemy.bb.dx / 2;
-          var dy = ball.y - enemy.bb.y - enemy.bb.dy / 2;
+
+/*
+          var bdx = Math.abs(ball.dx);
+          var bdy = Math.abs(ball.dy);
+
+          var ballxMin = ball.x - ballRadius;
+          var ballxMax = ball.x + ballRadius;
+          var exMin = enemy.bb.x + bdx;
+          var exMax = enemy.bb.x + enemy.bb.dx - bdx;
+
+          var ballyMin = ball.y - ballRadius;
+          var ballyMax = ball.y + ballRadius;
+          var eyMin = enemy.bb.y + bdy;
+          var eyMax = enemy.bb.y + enemy.bb.dy - bdy;
+
+          var dx = ballxMax <= exMin ? -1 : (ballxMin >= exMax ? 1 : 0);
+          var dy = ballyMax <= eyMin ? -1 : (ballyMin >= eyMax ? 1 : 0);
+*/
+
+          var dx = ball.x - (enemy.bb.x + enemy.bb.dx / 2);
+          var dy = ball.y - (enemy.bb.y + enemy.bb.dy / 2);
+          var xSize = enemy.bb.dx / 2;
+          var ySize = enemy.bb.dy / 2;
+
+          if(Math.abs(dx) <= xSize) {
+            dx = 0;
+          }
+            //else dx = Math.sign(dx);
+          if(Math.abs(dy) <= ySize) {
+            dy = 0;
+          }
+            //else dy = Math.sign(dy);
+
           bounceBall(ball, dx, dy);
         }
       }
@@ -468,20 +513,11 @@ function updateTick(part) {
     }
   }
 
-  for(var i = 0; i < ballBounces.length; i++) {
-    var bounce = ballBounces[i];
-    bounce.age += part;
-    if(bounce.age >= BALL_BOUNCE_MAX_AGE) {
-      ballBounces.splice(i, 1);
-      i--;
-    }
-  }
-
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   //update enemies
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  var enemyMove = enemyDx * enemySpeed;
+  var enemyMove = enemyDx * enemySpeed * part;
   var moved = false;
   for(var i = 0; i < enemies.length; i++) {
     var enemy = enemies[i];
